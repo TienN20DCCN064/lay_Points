@@ -34,6 +34,7 @@ var pointA, pointB, pointC, pointD;
 var pointA1, pointB1, pointC1, pointD1;
 var drawingEnabled = false;
 var drawingNewRectangle = false;
+var canClickCanvas = true; // Biến kiểm tra để quản lý sự kiện click
 
 captureButton.addEventListener('click', function() {
     clickedPoints = [];
@@ -44,12 +45,12 @@ captureButton.addEventListener('click', function() {
 });
 
 canvas.addEventListener('click', function(event) {
-    if (!drawingEnabled || (clickedPoints.length >= 4 && !drawingNewRectangle)) {
+    if (!drawingEnabled || (clickedPoints.length >= 4 && !drawingNewRectangle) || !canClickCanvas) {
         return;
     }
 
-    var x = event.clientX - canvas.getBoundingClientRect().left;
-    var y = event.clientY - canvas.getBoundingClientRect().top;
+    var x = event.offsetX;
+    var y = event.offsetY;
 
     if (!drawingNewRectangle) {
         clickedPoints.push({ x: x, y: y });
@@ -142,6 +143,7 @@ function sendDataToFlask() {
 function checkAndSendData() {
     if (clickedPoints.length === 4 && clickedPoints1.length === 4) {
         sendDataToFlask();
+        canClickCanvas = false; // Đặt biến kiểm tra thành false khi đủ 4 điểm
     }
 }
 
