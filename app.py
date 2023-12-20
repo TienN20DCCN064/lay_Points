@@ -4,6 +4,14 @@ app = Flask(__name__)
 clickedPoints = []
 clickedPoints1 = []
 
+# Variables to store (x_min, x_max) and (y_min, y_max) for clickedPoints
+x_range_points = {'min': None, 'max': None}
+y_range_points = {'min': None, 'max': None}
+
+# Variables to store (x_min, x_max) and (y_min, y_max) for clickedPoints1
+x_range_points1 = {'min': None, 'max': None}
+y_range_points1 = {'min': None, 'max': None}
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -13,27 +21,34 @@ def index():
 
 @app.route('/save_coordinates', methods=['POST'])
 def save_coordinates():
-    global clickedPoints, clickedPoints1
+    global clickedPoints, clickedPoints1, x_range_points, y_range_points, x_range_points1, y_range_points1
     data = request.get_json()
     clickedPoints = data.get('clickedPoints', [])
     clickedPoints1 = data.get('clickedPoints1', [])
-    
-    check_and_process_data()  # Xử lý dữ liệu khi cả hai mảng đều đủ giá trị
+
+    update_range_values(clickedPoints, x_range_points, y_range_points)
+    update_range_values(clickedPoints1, x_range_points1, y_range_points1)
 
     return jsonify({'success': True})
 
 @app.route('/view_coordinates', methods=['GET'])
 def view_coordinates():
-    global clickedPoints, clickedPoints1
-    return jsonify({'clickedPoints': clickedPoints, 'clickedPoints1': clickedPoints1})
+    global x_range_points, y_range_points, x_range_points1, y_range_points1
+    return jsonify({
+        'x_range_points': x_range_points,
+        'y_range_points': y_range_points,
+        'x_range_points1': x_range_points1,
+        'y_range_points1': y_range_points1
+    })
 
-def check_and_process_data():
-    global clickedPoints, clickedPoints1
-    if len(clickedPoints) == 4 and len(clickedPoints1) == 4:
-        # Xử lý dữ liệu theo nhu cầu của bạn
-        # Ví dụ: In ra console
-        print("Clicked Points:", clickedPoints)
-        print("Clicked Points 1:", clickedPoints1)
+def update_range_values(points, x_range, y_range):
+    x_values = [point['x'] for point in points]
+    y_values = [point['y'] for point in points]
+
+    x_range['min'] = min(x_values) if x_values else None
+    x_range['max'] = max(x_values) if x_values else None
+    y_range['min'] = min(y_values) if y_values else None
+    y_range['max'] = max(y_values) if y_values else None
 
 if __name__ == '__main__':
     app.run(debug=True)
