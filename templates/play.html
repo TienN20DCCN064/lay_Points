@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Playing Video: {{ video_name }}</h1>
+    <video width="720" height="540" controls id="videoPlayer">
+        <source src="{{ url_for('static', filename='videos/' + video_name + '.mp4') }}" type="video/mp4">
+    </video>
+
+    <canvas id="drawingCanvas" width="720" height="470"></canvas>
+
+    <button id="captureButton">Capture Frame</button>
+    <button id="stopButton">Bên trong</button>
+
+    <script>
+var video = document.getElementById("videoPlayer");
+var canvas = document.getElementById("drawingCanvas");
+var context = canvas.getContext("2d");
+var captureButton = document.getElementById("captureButton");
+var stopButton = document.getElementById("stopButton");
+var redDotRadius = 5; // Radius of the red dot
+var clickedPoints = [];
+var clickedPoints1 = [];
+var pointA, pointB, pointC, pointD;
+var pointA1, pointB1, pointC1, pointD1;
+var drawingEnabled = false;
+var drawingNewRectangle = false;
+
+captureButton.addEventListener('click', function() {
+    clickedPoints = [];
+    clickedPoints1 = [];
+    context.drawImage(video, 0, 0, 720, 470);
+    drawingEnabled = true;
+    drawingNewRectangle = false;
+});
+
+canvas.addEventListener('click', function(event) {
+    if (!drawingEnabled || (clickedPoints.length >= 4 && !drawingNewRectangle)) {
+        return;
+    }
+
+    var x = event.clientX - canvas.getBoundingClientRect().left;
+    var y = event.clientY - canvas.getBoundingClientRect().top;
+
+    if (!drawingNewRectangle) {
+        clickedPoints.push({ x: x, y: y });
+        if (clickedPoints.length === 4) {
+            clickedPoints.sort(function(a, b) {
+                return a.y - b.y;
+            });
+
+            // Gán giá trị cho A, B
+            if (clickedPoints[0].x < clickedPoints[1].x) {
+                pointA = clickedPoints[0];
+                pointB = clickedPoints[1];
+            } else {
+                pointA = clickedPoints[1];
+                pointB = clickedPoints[0];
+            }
+
+            // Gán giá trị cho C, D
+            if (clickedPoints[2].x < clickedPoints[3].x) {
+                pointD = clickedPoints[2];
+                pointC = clickedPoints[3];
+            } else {
+                pointD = clickedPoints[3];
+                pointC = clickedPoints[2];
+            }
+
+            drawLines();
+            alert("Đã lưu tọa độ của 4 điểm cuối cùng: " + JSON.stringify(clickedPoints));
+            drawingEnabled = false;
+            drawingNewRectangle = true;
+
+            checkAndSendData(); // Kiểm tra và gửi dữ liệu khi cả hai mảng đều đủ giá trị
+        }
+    } else {
+        clickedPoints1.push({ x: x, y: y });
+        if (clickedPoints1.length === 4) {
+            clickedPoints1.sort(function(a, b) {
+                return a.y - b.y;
+            });
+
+            // Gán giá trị cho A1, B1
+            if (clickedPoints1[0].x < clickedPoints1[1].x) {
+                pointA1 = clickedPoints1[0];
+                pointB1 = clickedPoints1[1];
+            } else {
+                pointA1 = clickedPoints1[1];
+                pointB1 = clickedPoints1[0];
+            }
+
+            // Gán giá trị cho C1, D1
+            if (clickedPoints1[2].x < clickedPoints1[3].x) {
+                pointD1 = clickedPoints1[2];
+                pointC1 = clickedPoints1[3];
+            } else {
+                pointD1 = clickedPoints1[3];
+                pointC1 = clickedPoints1[2];
+            }
+
+            drawLines1();
+            alert("Đã lưu tọa độ của 4 điểm cuối cùng: " + JSON.stringify(clickedPoints1));
+
+            checkAndSendData(); // Kiểm tra và gửi dữ liệu khi cả hai mảng đều đủ giá trị
+        }
+    }
+
+    drawRedDot(x, y);
+});
+
+stopButton.addEventListener('click', function() {
+    if (drawingNewRectangle) {
+        drawingEnabled = true;
+    } else {
+        drawingEnabled = false;
+    }
+});
+
+function sendDataToFlask() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/save_coordinates", true);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    var data = {
+        clickedPoints: clickedPoints,
+        clickedPoints1: clickedPoints1
+    };
+
+    xhr.send(JSON.stringify(data));
+}
+
+function checkAndSendData() {
+    if (clickedPoints.length === 4 && clickedPoints1.length === 4) {
+        sendDataToFlask();
+    }
+}
+
+function drawRedDot(x, y) {
+    context.beginPath();
+    context.arc(x, y, 4, 0, 2 * Math.PI);
+    context.fillStyle = 'red';
+    context.fill();
+    context.stroke();
+}
+
+function drawLines() {
+    const lineStyle = {
+        width: 4,
+        color: 'red'
+    };
+
+    drawLine(pointA, pointB, lineStyle);
+    drawLine(pointB, pointC, lineStyle);
+    drawLine(pointC, pointD, lineStyle);
+    drawLine(pointD, pointA, lineStyle);
+}
+
+function drawLines1() {
+    const lineStyle = {
+        width: 4,
+        color: 'green'
+    };
+
+    drawLine(pointA1, pointB1, lineStyle);
+    drawLine(pointB1, pointC1, lineStyle);
+    drawLine(pointC1, pointD1, lineStyle);
+    drawLine(pointD1, pointA1, lineStyle);
+}
+
+function drawLine(startPoint, endPoint, lineStyle) {
+    context.beginPath();
+    context.moveTo(startPoint.x, startPoint.y);
+    context.lineTo(endPoint.x, endPoint.y);
+    context.lineWidth = lineStyle.width;
+    context.strokeStyle = lineStyle.color;
+    context.stroke();
+}
+
+</script>
+</body>
+</html>
