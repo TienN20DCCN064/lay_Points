@@ -1,64 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <meta charset="UTF-8"> <!-- Khai báo bảng mã ký tự là UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Thiết lập hiển thị trên các thiết bị di động -->
+    <title>Video Player</title> <!-- Đặt tiêu đề trang -->
     <style>
         canvas {
-            border: 1px solid #000;
+            border: 1px solid #000; /* Thiết lập đường viền cho thẻ canvas */
         }
     </style>
 </head>
 <body>
-    <h1>Playing Video: {{ video_name }}</h1>
-    <video width="720" height="540" controls id="videoPlayer">
-        <source src="{{ url_for('static', filename='videos/' + video_name + '.mp4') }}" type="video/mp4">
+    <h1>Playing Video: {{ video_name }}</h1> <!-- Hiển thị tên video -->
+    <video width="720" height="470" controls id="videoPlayer">
+        <source src="{{ url_for('static', filename='videos/' + video_name + '.mp4') }}" type="video/mp4"> <!-- Nguồn video và định dạng -->
     </video>
 
-    <canvas id="drawingCanvas" width="720" height="470"></canvas>
-
-    <button id="captureButton">Bên ngoài</button>
-    <button id="stopButton">Bên trong</button>
-
+    <canvas id="drawingCanvas" width="720" height="470"></canvas> <!-- Vùng vẽ trên canvas -->
+    <button id="captureButton">Vẽ bên ngoài</button> <!-- Nút để chụp ảnh từ video và vẽ hình chữ nhật -->
+    <button id="stopButton">Vẽ bên trong</button> <!-- Nút để dừng hoặc tiếp tục vẽ hình chữ nhật -->
+    <button id="viewCoordinatesButton">Xem các điểm</button>
     <script>
-var video = document.getElementById("videoPlayer");
-var canvas = document.getElementById("drawingCanvas");
-var context = canvas.getContext("2d");
-var captureButton = document.getElementById("captureButton");
-var stopButton = document.getElementById("stopButton");
-var redDotRadius = 5; // Radius of the red dot
-var clickedPoints = [];
-var clickedPoints1 = [];
-var pointA, pointB, pointC, pointD;
-var pointA1, pointB1, pointC1, pointD1;
-var drawingEnabled = false;
-var drawingNewRectangle = false;
-var canClickCanvas = true; // Biến kiểm tra để quản lý sự kiện click
+        // Lấy các phần tử HTML vào biến JavaScript
+        var video = document.getElementById("videoPlayer");
+        var canvas = document.getElementById("drawingCanvas");
+        var context = canvas.getContext("2d");
+        var captureButton = document.getElementById("captureButton");
+        var stopButton = document.getElementById("stopButton");
+        var viewCoordinatesButton = document.getElementById("viewCoordinatesButton");
+        // Các biến quản lý vẽ và lưu tọa độ
+        var redDotRadius = 5; // Bán kính của điểm đỏ
+        var clickedPoints = [];
+        var clickedPoints1 = [];
+        var pointA, pointB, pointC, pointD;
+        var pointA1, pointB1, pointC1, pointD1;
+        var drawingEnabled = false;
+        var drawingNewRectangle = false;
+        var canClickCanvas = true; // Biến kiểm tra để quản lý sự kiện click
 
-captureButton.addEventListener('click', function() {
-    clickedPoints = [];
-    clickedPoints1 = [];
-    context.drawImage(video, 0, 0, 720, 470);
-    drawingEnabled = true;
-    drawingNewRectangle = false;
-});
+        //Thêm sự kiện click cho nút "Xem Tọa Độ Ngoài"
+        viewCoordinatesButton.addEventListener('click', function() {
+            window.open('/view_coordinates', '_blank');
+        });
+        // Xử lý sự kiện click nút chụp ảnh
+        captureButton.addEventListener('click', function() {
+            clickedPoints = [];
+            clickedPoints1 = [];
+            context.drawImage(video, 0, 0, 720, 470); // Vẽ hình ảnh từ video lên canvas
+            drawingEnabled = true;
+            drawingNewRectangle = false;
+        });
 
-canvas.addEventListener('click', function(event) {
-    if (!drawingEnabled || (clickedPoints.length >= 4 && !drawingNewRectangle) || !canClickCanvas) {
-        return;
-    }
+        // Xử lý sự kiện click trên canvas
+        canvas.addEventListener('click', function(event) {
+            if (!drawingEnabled || (clickedPoints.length >= 4 && !drawingNewRectangle) || !canClickCanvas) {
+                return;
+            }
+            // Lấy tọa độ x, y khi click
+            var x = event.offsetX;
+            var y = event.offsetY;
 
-    var x = event.offsetX;
-    var y = event.offsetY;
-
-    if (!drawingNewRectangle) {
-        clickedPoints.push({ x: x, y: y });
-        if (clickedPoints.length === 4) {
-            clickedPoints.sort(function(a, b) {
-                return a.y - b.y;
-            });
-
+            if (!drawingNewRectangle) {
+                // Lưu tọa độ vào mảng clickedPoints
+                clickedPoints.push({ x: x, y: y });
+                // Xử lý khi đã có đủ 4 điểm
+                if (clickedPoints.length === 4) {
+                    clickedPoints.sort(function(a, b) {
+                        return a.y - b.y;
+                    });
             // Gán giá trị cho A, B
             if (clickedPoints[0].x < clickedPoints[1].x) {
                 pointA = clickedPoints[0];
@@ -77,14 +86,14 @@ canvas.addEventListener('click', function(event) {
                 pointC = clickedPoints[2];
             }
 
-            drawLines();
-            alert("Đã lưu tọa độ của 4 điểm cuối cùng: " + JSON.stringify(clickedPoints));
-            drawingEnabled = false;
-            drawingNewRectangle = true;
-
-            checkAndSendData(); // Kiểm tra và gửi dữ liệu khi cả hai mảng đều đủ giá trị
-        }
-    } else {
+            drawLines(); // Vẽ hình chữ nhật
+                    alert("Đã lưu tọa độ của 4 điểm cuối cùng: " + JSON.stringify(clickedPoints));
+                    drawingEnabled = false;
+                    drawingNewRectangle = true;
+                    checkAndSendData(); // Kiểm tra và gửi dữ liệu khi cả hai mảng đều đủ giá trị
+                }
+            } else {
+        // Xử lý khi đã có đủ 4 điểm cho mảng clickedPoints1
         clickedPoints1.push({ x: x, y: y });
         if (clickedPoints1.length === 4) {
             clickedPoints1.sort(function(a, b) {
@@ -115,10 +124,9 @@ canvas.addEventListener('click', function(event) {
             checkAndSendData(); // Kiểm tra và gửi dữ liệu khi cả hai mảng đều đủ giá trị
         }
     }
-
     drawRedDot(x, y);
 });
-
+// Xử lý sự kiện click Bên trong
 stopButton.addEventListener('click', function() {
     if (drawingNewRectangle) {
         drawingEnabled = true;
@@ -126,7 +134,7 @@ stopButton.addEventListener('click', function() {
         drawingEnabled = false;
     }
 });
-
+ // Gửi dữ liệu tọa độ lên server
 function sendDataToFlask() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/save_coordinates", true);
@@ -139,14 +147,14 @@ function sendDataToFlask() {
 
     xhr.send(JSON.stringify(data));
 }
-
+ // Kiểm tra và gửi dữ liệu nếu đã đủ tọa độ
 function checkAndSendData() {
     if (clickedPoints.length === 4 && clickedPoints1.length === 4) {
         sendDataToFlask();
         canClickCanvas = false; // Đặt biến kiểm tra thành false khi đủ 4 điểm
     }
 }
-
+// Vẽ điểm đỏ
 function drawRedDot(x, y) {
     context.beginPath();
     context.arc(x, y, 4, 0, 2 * Math.PI);
@@ -154,7 +162,7 @@ function drawRedDot(x, y) {
     context.fill();
     context.stroke();
 }
-
+  // Vẽ hình chữ nhật ngoài
 function drawLines() {
     const lineStyle = {
         width: 4,
@@ -166,7 +174,7 @@ function drawLines() {
     drawLine(pointC, pointD, lineStyle);
     drawLine(pointD, pointA, lineStyle);
 }
-
+  // Vẽ hình chữ nhật trong
 function drawLines1() {
     const lineStyle = {
         width: 4,
@@ -178,7 +186,7 @@ function drawLines1() {
     drawLine(pointC1, pointD1, lineStyle);
     drawLine(pointD1, pointA1, lineStyle);
 }
-
+ // Vẽ đoạn thẳng từ startPoint đến endPoint
 function drawLine(startPoint, endPoint, lineStyle) {
     context.beginPath();
     context.moveTo(startPoint.x, startPoint.y);
