@@ -1,13 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Video Player</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Web Page</title>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>Enter Video Name</h1>
     <form method="post" action="/">
-        <input type="text" name="video_name" required>
+        <label for="video_name">Enter Video Name:</label>
+        <input type="text" id="video_name" name="video_name" required>
         <button type="submit">Play Video</button>
     </form>
+
 </body>
 </html>
