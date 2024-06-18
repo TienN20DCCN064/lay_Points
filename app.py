@@ -7,7 +7,7 @@ app = Flask(__name__)
 # Danh sách để lưu trữ các điểm được chọn trên video. Có hai danh sách tương ứng với hai loại điểm.
 clickedPoints = []
 clickedPoints1 = []
-
+# dfsfsdfd
 # Các biến để lưu trữ giá trị min và max của tọa độ X và Y của các điểm được chọn trên video.
 x_range_points = {'min': None, 'max': None}
 y_range_points = {'min': None, 'max': None}
