@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, jsonify
 # Khởi tạo đối tượng Flask để tạo ứng dụng web
 app = Flask(__name__)
 # hello
+# tiến
 # Danh sách để lưu trữ các điểm được chọn trên video. Có hai danh sách tương ứng với hai loại điểm.
 clickedPoints = []
 clickedPoints1 = []
