@@ -63,3 +63,14 @@ def update_range_values(points, x_range, y_range):
 # Chạy ứng dụng và bật chế độ debug để theo dõi và sửa lỗi
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+def update_range_(points, x_range, y_range):
+    x_values = [point['x'] for point in points]
+    y_values = [point['y'] for point in points]
+
+    x_range['min'] = min(x_values) if x_values else None
+    x_range['max'] = max(x_values) if x_values else None
+    y_range['min'] = min(y_values) if y_values else None
+    y_range['max'] = max(y_values) if y_values else None
